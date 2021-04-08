@@ -4,5 +4,25 @@
 <div class="w-100 text-center">
     <a class="btn btn-primary mx-auto" href="/addJobs" role="button">Создайте работу</a>
 </div>
+    {% for name in form %}
+        {% set a = form.get(loop.index | string) %}
+            <caption><b class="mx-auto d-block" style="width: 80px;">Action # {{loop.index}}</b></caption>
+            <table class="table table-hover caption-top">
+                <tr>
+                    <th>Title of activity</th>
+                    <th>Team leader</th>
+                    <th>Duration</th>
+                    <th>List of collaborators</th>
+                    <th>Is finished</th>
+                </tr>
+                <tr>
+                    <td>{{ a.get('job') }}  </td>
+                    <td>{{ a.get('team_leader') }}</td>
+                    <td>{{ a.get('work_size') }}</td>
+                    <td>{{ a.get('collaborators') }}</td>
+                    <td>{{ a.get('is_finished') }}</td>
+                </tr>
+            </table>
+    {% endfor %}
 
 {% endblock %}

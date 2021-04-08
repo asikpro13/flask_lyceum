@@ -8,6 +8,17 @@ from data import db_session
 from data.users import User, Jobs
 
 
+class RegisterForm(FlaskForm):
+    email = EmailField('Почта', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    password_again = PasswordField('Повторите пароль', validators=[DataRequired()])
+    name = StringField('Имя', validators=[DataRequired()])
+    surname = StringField('Фамилия', validators=[DataRequired()])
+    age = IntegerField('Возраст', validators=[DataRequired()])
+    position = StringField('Местоположение', validators=[DataRequired()])
+    speciality = StringField('Специальность', validators=[DataRequired()])
+    address = StringField('Адрес', validators=[DataRequired()])
+    submit = SubmitField('Войти')
 
 
 class LoginForm(FlaskForm):
@@ -44,10 +55,25 @@ def load_user(user_id):
 
 @app.route('/')
 def main():
-    if session.get('name'):
-        return render_template('main.html')
-    else:
-        return 'Вам сюда нельзя'
+    try:
+        if session['name']:
+            spisok = {}
+            for job in db_sess.query(Jobs).all():
+                spisok[str(job.id)] = {}
+                spisok[str(job.id)]['job'] = job.job
+                team_lead = db_sess.query(User).filter(User.id == job.team_leader).first()
+                spisok[str(job.id)]['team_leader'] = team_lead.name + ' ' + team_lead.surname
+                spisok[str(job.id)]['work_size'] = str(job.work_size) + ' hours'
+                spisok[str(job.id)]['collaborators'] = job.collaborators
+                spisok[str(job.id)]['is_finished'] = job.is_finished
+            return render_template('main.html', name=session['name'], form=spisok)
+        else:
+            return render_template('error.html', error="""
+            Вы не прошли авторизацию.
+            """)
+    except KeyError:
+        session['name'] = None
+        return
 
 
 @app.route('/addJobs', methods=['GET', 'POST'])
@@ -75,21 +101,43 @@ def login():
             session['name'] = user.surname + ' ' + user.name
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
-        return render_template('auto_answer.html',
+        return render_template('login.html',
                                message="Неправильный логин или пароль",
                                form=form)
-    return render_template('auto_answer.html', title='Авторизация', form=form)
+    return render_template('login.html', title='Авторизация', form=form)
 
 
-@app.route('/registration')
+@app.route('/registration', methods=['GET', 'POST'])
 def registration():
-    form = Form
+    form = RegisterForm()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Пароли не совпадают")
+        if db_sess.query(User).filter(User.email == form.email.data).first():
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Такой пользователь уже есть")
+        user = User()
+        user.email = form.email.data
+        user.hashed_password = user.set_password(form.email.data)
+        user.surname = form.surname.data
+        user.name = form.name.data
+        user.age = form.age.data
+        user.position = form.position.data
+        user.speciality = form.speciality.data
+        user.address = form.address.data
+        db_sess.add(user)
+        db_sess.commit()
+        session['name'] = form.surname.data + ' ' + form.name.data
+        return redirect('/')
+    return render_template('register.html', title='Регистрация', form=form)
 
 
 @app.route('/logout')
-@login_required
 def logout():
-    logout_user()
+    session['name'] = None
     return redirect("/")
 
 
