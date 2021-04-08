@@ -1,12 +1,39 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+  <div class="modal" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Удаление</h4>
+          <button type="button" class="close" data-dismiss="modal">×</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          Вы точно хотите удалить работу?
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="delete_job(); window.location.reload()">Подтвердить</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!------------------------------------------------------------------------------------------>
 <div class="w-100 text-center">
     <a class="btn btn-primary mx-auto" href="/addJobs" role="button">Создайте работу</a>
 </div>
     {% for name in form %}
-        {% set a = form.get(loop.index | string) %}
-            <caption><b class="mx-auto d-block" style="width: 80px;">Action # {{loop.index}}</b></caption>
+        {% set a = form.get(name) %}
+            <a class="btn btn-warning" role="button">Изменить</a>
+            <a id="{{ name }}" type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal" onclick="last_id(this.id)">Удалить</a>
+            <caption><b class="mx-auto d-block" style="width: 110px;">Action # {{name}}</b></caption>
             <table class="table table-hover caption-top">
                 <tr>
                     <th>Title of activity</th>

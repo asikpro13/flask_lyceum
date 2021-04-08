@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, make_response, session, redirect
+from flask import Flask, render_template, request, make_response, session, redirect, jsonify
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, TextAreaField, SubmitField, IntegerField, BooleanField
 from wtforms.fields.html5 import EmailField
@@ -6,6 +6,7 @@ from wtforms.validators import DataRequired
 from flask_login import LoginManager, login_user, login_required, logout_user
 from data import db_session
 from data.users import User, Jobs
+from sqlalchemy import exc
 
 
 class RegisterForm(FlaskForm):
@@ -58,15 +59,18 @@ def main():
     try:
         if session['name']:
             spisok = {}
-            for job in db_sess.query(Jobs).all():
-                spisok[str(job.id)] = {}
-                spisok[str(job.id)]['job'] = job.job
-                team_lead = db_sess.query(User).filter(User.id == job.team_leader).first()
-                spisok[str(job.id)]['team_leader'] = team_lead.name + ' ' + team_lead.surname
-                spisok[str(job.id)]['work_size'] = str(job.work_size) + ' hours'
-                spisok[str(job.id)]['collaborators'] = job.collaborators
-                spisok[str(job.id)]['is_finished'] = job.is_finished
-            return render_template('main.html', name=session['name'], form=spisok)
+            try:
+                for job in db_sess.query(Jobs).all():
+                    spisok[str(job.id)] = {}
+                    spisok[str(job.id)]['job'] = str(job.job)
+                    team_lead = db_sess.query(User).filter(User.id == job.team_leader).first()
+                    spisok[str(job.id)]['team_leader'] = str(team_lead.name + ' ' + team_lead.surname)
+                    spisok[str(job.id)]['work_size'] = str(job.work_size) + ' hours'
+                    spisok[str(job.id)]['collaborators'] = str(job.collaborators)
+                    spisok[str(job.id)]['is_finished'] = job.is_finished
+                return render_template('main.html', name=session['name'], form=spisok)
+            except exc.InvalidRequestError:
+                return redirect('/')
         else:
             return render_template('error.html', error="""
             Вы не прошли авторизацию.
@@ -139,6 +143,14 @@ def registration():
 def logout():
     session['name'] = None
     return redirect("/")
+
+
+@app.route('/del_user/<int:del_id>', methods=['GET'])
+def del_user(del_id):
+    print(del_id)
+    db_sess.query(Jobs).filter(Jobs.id == del_id).delete()
+    db_sess.commit()
+    return jsonify({'result': True}, 200)
 
 
 if __name__ == '__main__':
