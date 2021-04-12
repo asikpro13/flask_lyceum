@@ -7,7 +7,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user
 from data import db_session
 from data.users import User, Jobs
 from sqlalchemy import exc
-
+import json
 
 class RegisterForm(FlaskForm):
     email = EmailField('Почта', validators=[DataRequired()])
@@ -64,11 +64,15 @@ def main():
                     spisok[str(job.id)] = {}
                     spisok[str(job.id)]['job'] = str(job.job)
                     team_lead = db_sess.query(User).filter(User.id == job.team_leader).first()
-                    spisok[str(job.id)]['team_leader'] = str(team_lead.name + ' ' + team_lead.surname)
-                    spisok[str(job.id)]['work_size'] = str(job.work_size) + ' hours'
+                    try:
+                        spisok[str(job.id)]['team_leader'] = str(team_lead.name + ' ' + team_lead.surname)
+                    except AttributeError:
+                        spisok[str(job.id)]['team_leader'] = str('None')
+                    spisok[str(job.id)]['work_size'] = str(job.work_size)
                     spisok[str(job.id)]['collaborators'] = str(job.collaborators)
                     spisok[str(job.id)]['is_finished'] = job.is_finished
-                return render_template('main.html', name=session['name'], form=spisok)
+                    spisok[str(job.id)]['id_creator'] = job.id_creator
+                return render_template('main.html', name=session['name'], form=spisok, id_main=session['id'])
             except exc.InvalidRequestError:
                 return redirect('/')
         else:
@@ -90,6 +94,7 @@ def add_jobs():
         job_form.work_size = form.work_size.data
         job_form.collaborators = form.collaborators.data
         job_form.is_finished = form.is_finished.data
+        job_form.id_creator = session['id']
         db_sess.add(job_form)
         db_sess.commit()
         return redirect('/')
@@ -103,6 +108,7 @@ def login():
         user = db_sess.query(User).filter(User.email == form.email.data).first()
         if user:
             session['name'] = user.surname + ' ' + user.name
+            session['id'] = user.id
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
         return render_template('login.html',
@@ -147,10 +153,32 @@ def logout():
 
 @app.route('/del_user/<int:del_id>', methods=['GET'])
 def del_user(del_id):
-    print(del_id)
     db_sess.query(Jobs).filter(Jobs.id == del_id).delete()
     db_sess.commit()
     return jsonify({'result': True}, 200)
+
+
+@app.route('/last_user/<int:last_id>', methods=['GET'])
+def last_user(last_id):
+    job = db_sess.query(Jobs).filter(Jobs.id == last_id).first()
+    return jsonify(title_of_activity=job.job,
+                   team_leader=job.team_leader,
+                   duration=job.work_size,
+                   collaborators=job.collaborators,
+                   finished=job.is_finished)
+
+
+@app.route('/edit_job', methods=['POST'])
+def edit_job():
+    job = json.loads(request.data)
+    editJob = db_sess.query(Jobs).filter(Jobs.id == job.get('id_job')).first()
+    editJob.job = job.get('title')
+    editJob.team_leader = int(job.get('teamLeader'))
+    editJob.work_size = int(job.get('duration'))
+    editJob.collaborators = job.get('collaborators')
+    editJob.is_finished = job.get('is_finished')
+    db_sess.commit()
+    return jsonify('True', 200)
 
 
 if __name__ == '__main__':

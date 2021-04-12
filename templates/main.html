@@ -2,7 +2,37 @@
 
 {% block content %}
 
-  <div class="modal" id="myModal">
+<div class="modal" id="editModal">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Редактирование</h4>
+          <button type="button" class="close" data-dismiss="modal">×</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+            Title of activity<input class="form-control" type="text" id="editTitle">
+            Team leader<input class="form-control" type="text" id="editTeamLeader">
+            Duration<input class="form-control" type="text" id="editDuration">
+            List of collaborators<input class="form-control" type="text" id="editListOfCollaborators">
+            is_finished
+            <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="finish">
+            </div>
+        </div>
+        <!-- Modal footer -->
+        <div class="modal-footer">
+            <button type="button" class="btn btn-warning" data-dismiss="modal" onclick="edit_job()">Отредактировать</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div class="modal" id="deleteModal">
     <div class="modal-dialog">
       <div class="modal-content">
 
@@ -30,11 +60,15 @@
     <a class="btn btn-primary mx-auto" href="/addJobs" role="button">Создайте работу</a>
 </div>
     {% for name in form %}
+        {% set name1 = name %}
         {% set a = form.get(name) %}
-            <a class="btn btn-warning" role="button">Изменить</a>
-            <a id="{{ name }}" type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal" onclick="last_id(this.id)">Удалить</a>
+            {% if id_main == a.get('id_creator') or id_main == 1%}
+            <a id="{{ name1 }}" class="btn btn-warning" role="button" data-toggle="modal" data-target="#editModal" onclick="last_id_python(this.id)">Изменить</a>
+            <a id="{{ name }}" type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal" onclick="last_id(this.id)">Удалить</a>
+            {% endif %}
             <caption><b class="mx-auto d-block" style="width: 110px;">Action # {{name}}</b></caption>
-            <table class="table table-hover caption-top">
+
+<table class="table table-hover caption-top">
                 <tr>
                     <th>Title of activity</th>
                     <th>Team leader</th>
