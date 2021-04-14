@@ -3,9 +3,10 @@ import sqlalchemy
 from flask_login import UserMixin
 from .db_session import SqlAlchemyBase
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy_serializer import SerializerMixin
 
 
-class User(SqlAlchemyBase, UserMixin):
+class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
@@ -27,7 +28,7 @@ class User(SqlAlchemyBase, UserMixin):
         return check_password_hash(self.hashed_password, password)
 
 
-class Jobs(SqlAlchemyBase, UserMixin):
+class Jobs(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'Jobs'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
@@ -41,7 +42,7 @@ class Jobs(SqlAlchemyBase, UserMixin):
     id_creator = sqlalchemy.Column(sqlalchemy.Integer)
 
 
-class Department(SqlAlchemyBase):
+class Department(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'Department'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)

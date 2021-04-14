@@ -1,13 +1,14 @@
 from flask import Flask, render_template, request, make_response, session, redirect, jsonify
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, TextAreaField, SubmitField, IntegerField, BooleanField
+from wtforms import PasswordField, StringField, SubmitField, IntegerField, BooleanField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
 from flask_login import LoginManager, login_user, login_required, logout_user
-from data import db_session
+from data import db_session, news_api
 from data.users import User, Jobs
 from sqlalchemy import exc
 import json
+
 
 class RegisterForm(FlaskForm):
     email = EmailField('Почта', validators=[DataRequired()])
@@ -39,6 +40,7 @@ class JobForm(FlaskForm):
 
 
 app = Flask(__name__)
+app.register_blueprint(news_api.blueprint)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
 db_session.global_init('db/mars_explorer.db')
