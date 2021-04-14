@@ -2,7 +2,7 @@ let id_job = null
 let edit_id = null
 
 function delete_job() {
-    fetch('/del_user/' + id_job)  // Удаление записи работы
+    fetch('/del_job/' + id_job)  // Удаление записи работы
 }
 
 function last_id(last_id) {

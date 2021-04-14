@@ -154,8 +154,8 @@ def logout():
     return redirect("/")
 
 
-@app.route('/del_user/<int:del_id>', methods=['GET'])
-def del_user(del_id):
+@app.route('/del_job/<int:del_id>', methods=['GET'])
+def del_job(del_id):
     db_sess.query(Jobs).filter(Jobs.id == del_id).delete()
     db_sess.commit()
     return jsonify({'result': True}, 200)
