@@ -8,6 +8,7 @@ from data import db_session, news_api
 from data.users import User, Jobs
 from sqlalchemy import exc
 import json
+from requests import post, get
 
 
 class RegisterForm(FlaskForm):
