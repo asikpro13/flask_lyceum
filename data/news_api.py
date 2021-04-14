@@ -23,7 +23,7 @@ def get_jobs():
     )
 
 
-@blueprint.route('/api/jobs/<int:job_id>', methods=['GET'])
+@blueprint.route('/api/jobs/<job_id>', methods=['GET'])
 def get_one_job(job_id):
     db_sess = db_session.create_session()
     jobs = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
@@ -36,6 +36,6 @@ def get_one_job(job_id):
             }
         )
     except AttributeError:
-        return flask.make_response
+        return flask.make_response(flask.jsonify({'error': 'Not found'}), 404)
     except TypeError:
-        return flask.make_response(flask.jsonify({'error': 'Not found'}, 404))
+        return flask.make_response(flask.jsonify({'error': 'Error id'}, 404))
