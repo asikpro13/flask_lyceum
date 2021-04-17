@@ -22,3 +22,5 @@ print(post('http://127.0.0.1:8080/api/jobs/', json={
     'collaborators': '1, 2, 3',
     'id_creator': 3}))  # Не передан 1 параметр
 print(post('http://127.0.0.1:8080/api/jobs/'))  # Аргументы не переданы
+
+
