@@ -84,7 +84,7 @@ def main():
             """)
     except KeyError:
         session['name'] = None
-        return
+        return redirect('/')
 
 
 @app.route('/addJobs', methods=['GET', 'POST'])

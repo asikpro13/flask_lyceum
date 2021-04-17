@@ -37,7 +37,6 @@ def get_jobs():
 def get_one_job(job_id):
     db_sess = db_session.create_session()
     jobs = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
-    print(jobs)
     try:
         return flask.jsonify(
             {
@@ -51,7 +50,7 @@ def get_one_job(job_id):
         return flask.make_response(flask.jsonify({'error': 'Error id'}, 404))
 
 
-@blueprint.route('/api/users/', methods=['GET', 'POSTS'])
+@blueprint.route('/api/users/', methods=['GET', 'POST'])
 def get_users():
     db_sess = db_session.create_session()
     if flask.request.method == 'GET':
@@ -75,16 +74,31 @@ def get_users():
         return flask.make_response(flask.jsonify({'Created': 'True'}), 201)
 
 
-@blueprint.route('/api/users/<int:id_user>', methods=['GET'])
-def get_one_users(id_user):
+@blueprint.route('/api/users/<int:id_user>', methods=['GET', 'POST', 'DELETE'])
+def get_one_users(id_user):  # Получение пользователя
     db_sess = db_session.create_session()
-    try:
-        user = db_sess.query(User).filter(User.id == id_user).first()
-        return flask.jsonify(
-            {
-                'jobs':
-                    [user.to_dict()]
-            }
-        )
-    except AttributeError:
-        return flask.make_response(flask.jsonify({'error': 'Not found'}), 404)
+    if flask.request.method == 'GET':
+        try:
+            user = db_sess.query(User).filter(User.id == id_user).first()
+            return flask.jsonify(
+                {
+                    'jobs':
+                        [user.to_dict()]
+                }
+            )
+        except AttributeError:
+            return flask.make_response(flask.jsonify({'error': 'Not found'}), 404)
+    elif flask.request.method == 'POST':  # Редактирование пользователя
+        editUser = db_sess.query(User).filter(User.id == id_user).first()
+        editUser.surname = flask.request.json['surname']
+        editUser.name = flask.request.json['name']
+        editUser.age = flask.request.json['age']
+        editUser.speciality = flask.request.json['speciality']
+        editUser.address = flask.request.json['address']
+        editUser.id_creator = flask.request.json['id_creator']
+        db_sess.add(editUser)
+        db_sess.commit()
+        return flask.make_response(flask.jsonify({'Accepted': 'True'}), 202)
+    elif flask.request.method == 'DELETE':  # Удаление пользователя
+        db_sess.query(User).filter(User.id == id_user).first().delete()
+        return flask.make_response(flask.jsonify({'OK': 'True'}), 200)
